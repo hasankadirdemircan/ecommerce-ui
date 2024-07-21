@@ -1,19 +1,60 @@
 const jwtToken = localStorage.getItem("jwtToken");
 const BASE_PATH = "http://localhost:8080/"
+const BASE_IMAGE_PATH = "/Users/hasankadirdemircan/Desktop/ecommerce/"
 
+let cartItems = [];
+
+//kategorileri backendden çekmek, api-call
 async function fethCategories() {
-    console.log("jwt : " + jwtToken);
-    const response = await fetch(BASE_PATH + "category", {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + jwtToken
-        }
-    });
-    const data = await response.json();
-    console.log(data);
+    try {
+        const response = await fetch(BASE_PATH + "category", {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + jwtToken
+            }
+        });
 
-    displayCategories(data)
+        if (!response.ok) {
+            console.error("response status :" + response.status)
+            throw new Error("Failed to get categories, response status : " + response.status)
+        }
+        const data = await response.json();
+        displayCategories(data)
+    } catch (error) {
+        console.error("Error fetching categories: ", error);
+        // if (error.status == 403) { TODO: status undefined geliyor.
+        window.location.href = "login.html"
+        //}
+    }
+
+}
+
+//seçilen kategoriye göre ürünleri backendden çekmek, api-call
+
+async function fetchProductByCategory(categoryId) {
+    const endPointUrl = BASE_PATH + "product/category/" + categoryId;
+    try {
+        const response = await fetch(endPointUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + jwtToken
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to get products by category id, response status : " + response.status)
+        }
+
+        const data = await response.json();
+        displayProducts(data)
+    } catch (error) {
+        console.error("Error fetching products: ", error);
+        if (error.status == 403) {
+            window.location.href = "login.html"
+        }
+    }
 }
 
 function displayCategories(categories) {
@@ -28,10 +69,90 @@ function displayCategories(categories) {
     });
 }
 
+function displayProducts(products) {
+    const productList = document.getElementById("productList");
+    productList.innerHTML = '';
+    products.forEach(product => {
+        const productCard = document.createElement("div");
+        productCard.classList.add("col-md-2", "mb-4");
+
+        const productImage = document.createElement("img");
+        productImage.src = BASE_IMAGE_PATH + product.image
+        productImage.alt = product.name;
+        productImage.style.maxWidth = "150px";
+        productImage.style.maxHeight = "150px";
+
+        const cardBody = document.createElement("div");
+        cardBody.classList.add("card-body");
+        cardBody.innerHTML = `
+            <h5 class="card-title">${product.name}</h5>
+            <p class="card-text">${product.price}</p>
+            <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(product)})'>Add to Cart</button>
+        `;
+
+        productCard.appendChild(productImage);
+        productCard.appendChild(cardBody);
+
+        productList.appendChild(productCard);
+    });
+}
+
+function addToCart(product) {
+    const productCountInCart = cartItems.filter(item => item.id === product.id).length;
+    if (product.unitsInStock > 0 && productCountInCart < product.unitsInStock) {
+        cartItems.push(product);
+        updateCart();
+        updateOrderButtonVisiblity();
+    }
+}
+
+function updateCart() {
+    const cart = document.getElementById("cart");
+    cart.innerHTML = '';
+
+    cartItems.forEach((item, index) => {
+        const cartItemElement = document.createElement("li");
+        cartItemElement.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+
+        const itemNameElement = document.createElement("span");
+        cartItemElement.textContent = item.name + " - " + item.price;
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add("btn", "btn-danger");
+        deleteButton.innerHTML = '<i class="bi bi-trash"></i>';
+
+        deleteButton.onclick = function () {
+            removeFromCart(index);
+        };
+
+        cartItemElement.appendChild(itemNameElement);
+        cartItemElement.appendChild(deleteButton);
+        cart.appendChild(cartItemElement);
+    });
+}
+
+function removeFromCart(index) {
+    cartItems.splice(index, 1)[0];
+    updateCart();
+    updateOrderButtonVisiblity();
+}
+
+function updateOrderButtonVisiblity() {
+    if (cartItems.length > 0) {
+        document.getElementById("orderButton").style.display = "block";
+    } else {
+        document.getElementById("orderButton").style.display = "none";
+    }
+}
 
 document.addEventListener("DOMContentLoaded", async function () {
+    updateOrderButtonVisiblity();
+
     //kategorileri yükle
     await fethCategories();
 
     //kategori seçimini dinle ve product'ları çek.
+    const categorySelect = document.getElementById("categorySelect");
+    categorySelect.addEventListener("change", async function () {
+        await fetchProductByCategory(categorySelect.value);
+    });
 })
