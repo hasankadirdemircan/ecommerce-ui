@@ -196,7 +196,6 @@ function clearCart() {
     updateCart();
     updateOrderButtonVisiblity();
     const categorySelect = document.getElementById("categorySelect");
-    console.log("categorySelect : ", categorySelect.value)
     fetchProductByCategory(categorySelect.value);
 }
 document.addEventListener("DOMContentLoaded", async function () {
@@ -210,6 +209,4 @@ document.addEventListener("DOMContentLoaded", async function () {
     categorySelect.addEventListener("change", async function () {
         await fetchProductByCategory(categorySelect.value);
     });
-
-
 })
