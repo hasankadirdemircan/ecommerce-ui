@@ -66,7 +66,7 @@ function displayCategories(categories) {
     categories.forEach(category => {
         const option = document.createElement("option");
         option.value = category.id;
-        option.text = category.categoryEnum;
+        option.text = category.name;
         categorySelect.appendChild(option);
     });
 }
@@ -76,16 +76,12 @@ function displayProducts(products) {
     productList.innerHTML = '';
     products.forEach(product => {
         const productCard = document.createElement("div");
-        productCard.classList.add("col-md-3", "mb-4"); // Adjust column size as needed (e.g., col-md-3 for 4 products per row)
-
-        const card = document.createElement("div");
-        card.classList.add("card");
+        productCard.classList.add("col-md-2", "mb-4");
 
         const productImage = document.createElement("img");
-        productImage.src = BASE_IMAGE_PATH + product.image;
+        productImage.src = BASE_IMAGE_PATH + product.image
         productImage.alt = product.name;
-        productImage.classList.add("card-img-top");
-        productImage.style.maxWidth = "100%";
+        productImage.style.maxWidth = "150px";
         productImage.style.maxHeight = "150px";
 
         const cardBody = document.createElement("div");
@@ -96,14 +92,12 @@ function displayProducts(products) {
             <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(product)})'>Add to Cart</button>
         `;
 
-        card.appendChild(productImage);
-        card.appendChild(cardBody);
-        productCard.appendChild(card);
+        productCard.appendChild(productImage);
+        productCard.appendChild(cardBody);
 
         productList.appendChild(productCard);
     });
 }
-
 
 function addToCart(product) {
     const productCountInCart = cartItems.filter(item => item.id === product.id).length;
@@ -215,4 +209,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     categorySelect.addEventListener("change", async function () {
         await fetchProductByCategory(categorySelect.value);
     });
+
+
 })
