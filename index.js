@@ -76,12 +76,16 @@ function displayProducts(products) {
     productList.innerHTML = '';
     products.forEach(product => {
         const productCard = document.createElement("div");
-        productCard.classList.add("col-md-2", "mb-4");
+        productCard.classList.add("col-md-3", "mb-4"); // Adjust column size as needed (e.g., col-md-3 for 4 products per row)
+
+        const card = document.createElement("div");
+        card.classList.add("card");
 
         const productImage = document.createElement("img");
-        productImage.src = BASE_IMAGE_PATH + product.image
+        productImage.src = BASE_IMAGE_PATH + product.image;
         productImage.alt = product.name;
-        productImage.style.maxWidth = "150px";
+        productImage.classList.add("card-img-top");
+        productImage.style.maxWidth = "100%";
         productImage.style.maxHeight = "150px";
 
         const cardBody = document.createElement("div");
@@ -92,12 +96,14 @@ function displayProducts(products) {
             <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(product)})'>Add to Cart</button>
         `;
 
-        productCard.appendChild(productImage);
-        productCard.appendChild(cardBody);
+        card.appendChild(productImage);
+        card.appendChild(cardBody);
+        productCard.appendChild(card);
 
         productList.appendChild(productCard);
     });
 }
+
 
 function addToCart(product) {
     const productCountInCart = cartItems.filter(item => item.id === product.id).length;
