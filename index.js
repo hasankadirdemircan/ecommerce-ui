@@ -203,9 +203,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     //kategorileri yükle
     await fethCategories();
-
     //kategori seçimini dinle ve product'ları çek.
     const categorySelect = document.getElementById("categorySelect");
+    await fetchProductByCategory(categorySelect.value);
     categorySelect.addEventListener("change", async function () {
         await fetchProductByCategory(categorySelect.value);
     });
