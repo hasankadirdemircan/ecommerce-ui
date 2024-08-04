@@ -104,23 +104,29 @@ function showDeleteCategoryModal(categoryId) {
 
 async function deleteCategory() {
     if (currentCategoryId !== 0) {
-        await fetch(BASE_PATH + "category/" + currentCategoryId, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + jwtToken
-            }
-        }).then(async response => {
+        try {
+            const response = await fetch(BASE_PATH + "category/" + currentCategoryId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + jwtToken
+                }
+            });
+
             if (!response.ok) {
                 const data = await response.json();
-                showFailAlert(data.message);
-                throw new Error(data.message)
+                if (data && data.message) {
+                    showFailAlert(data.message);
+                }
+            } else {
+                showSuccessAlert('Category deleted successfully');
+                getAllCategory();
             }
-            //  hideModal('deleteProductModal')
-            getAllProduct();
-        }).catch(error => {
-            hideModal('deleteProductModal') //TODO does not work..
-        });
+        } catch (error) {
+            console.error('Error:', error);
+        } finally {
+            hideModal('deleteCategoryModal');
+        }
     }
 }
 function showSuccessAlert(message) {
